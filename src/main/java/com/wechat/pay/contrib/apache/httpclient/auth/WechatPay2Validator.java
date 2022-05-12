@@ -10,15 +10,15 @@ import static com.wechat.pay.contrib.apache.httpclient.constant.WechatPayHttpHea
 import com.wechat.pay.contrib.apache.httpclient.Validator;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.DateTimeException;
-import java.time.Duration;
-import java.time.Instant;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.DateTimeException;
+import org.threeten.bp.Duration;
+import org.threeten.bp.Instant;
 
 /**
  * @author xy-peng

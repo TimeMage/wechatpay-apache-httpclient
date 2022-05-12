@@ -5,11 +5,12 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author xy-peng
@@ -28,7 +29,7 @@ public class RsaCryptoUtil {
             cipher.init(Cipher.ENCRYPT_MODE, certificate.getPublicKey());
             byte[] data = message.getBytes(StandardCharsets.UTF_8);
             byte[] ciphertext = cipher.doFinal(data);
-            return Base64.getEncoder().encodeToString(ciphertext);
+            return Base64.encodeBase64String(ciphertext);
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new RuntimeException("当前Java环境不支持RSA v1.5/OAEP", e);
@@ -47,7 +48,7 @@ public class RsaCryptoUtil {
         try {
             Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] data = Base64.getDecoder().decode(ciphertext);
+            byte[] data = Base64.decodeBase64(ciphertext);
             return new String(cipher.doFinal(data), StandardCharsets.UTF_8);
 
         } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {

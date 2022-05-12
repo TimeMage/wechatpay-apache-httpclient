@@ -13,7 +13,8 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author xy-peng
@@ -28,7 +29,7 @@ public class PemUtil {
 
         try {
             KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey)));
+            return kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decodeBase64(privateKey)));
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("当前Java环境不支持RSA", e);

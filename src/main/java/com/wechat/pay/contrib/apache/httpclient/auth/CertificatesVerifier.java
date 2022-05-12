@@ -8,11 +8,12 @@ import java.security.SignatureException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class CertificatesVerifier implements Verifier {
             Signature sign = Signature.getInstance("SHA256withRSA");
             sign.initVerify(certificate);
             sign.update(message);
-            return sign.verify(Base64.getDecoder().decode(signature));
+            return sign.verify(Base64.decodeBase64(signature));
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("当前Java环境不支持SHA256withRSA", e);

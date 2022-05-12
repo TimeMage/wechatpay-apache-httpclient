@@ -5,7 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.util.Base64;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * @author xy-peng
@@ -26,7 +27,7 @@ public class PrivateKeySigner implements Signer {
             Signature sign = Signature.getInstance("SHA256withRSA");
             sign.initSign(privateKey);
             sign.update(message);
-            return new SignatureResult(Base64.getEncoder().encodeToString(sign.sign()), certificateSerialNumber);
+            return new SignatureResult(Base64.encodeBase64String(sign.sign()), certificateSerialNumber);
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("当前Java环境不支持SHA256withRSA", e);

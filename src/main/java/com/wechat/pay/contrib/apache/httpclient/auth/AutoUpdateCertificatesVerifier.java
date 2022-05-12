@@ -17,8 +17,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +27,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
+import org.threeten.bp.Instant;
 
 /**
  * 在原有CertificatesVerifier基础上，增加自动更新证书功能
@@ -101,7 +101,7 @@ public class AutoUpdateCertificatesVerifier implements Verifier {
     protected void autoUpdateCert() throws IOException, GeneralSecurityException {
         try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create()
                 .withCredentials(credentials)
-                .withValidator(verifier == null ? (response) -> true : new WechatPay2Validator(verifier))
+                .withValidator(verifier == null ? new ValidatorTrue() : new WechatPay2Validator(verifier))
                 .build()) {
 
             HttpGet httpGet = new HttpGet(CERT_DOWNLOAD_PATH);

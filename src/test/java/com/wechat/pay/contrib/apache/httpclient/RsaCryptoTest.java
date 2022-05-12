@@ -20,8 +20,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
-import java.util.Base64;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -133,7 +133,7 @@ public class RsaCryptoTest {
         //utilize the standard lib to verify the correctness of the encrypted result.
         Cipher cipher = Cipher.getInstance(transformation);
         cipher.init(Cipher.DECRYPT_MODE, PemUtil.loadPrivateKey(privateKeyForDecrypt));
-        String secretText = new String((cipher.doFinal(Base64.getDecoder().decode(encryptedText))));
+        String secretText = new String((cipher.doFinal(Base64.decodeBase64(encryptedText))));
         assert(text.equals(secretText));
     }
 
@@ -155,7 +155,7 @@ public class RsaCryptoTest {
         //utilize the standard lib to verify the correctness of the encrypted result.
         Cipher cipher = Cipher.getInstance(transformation);
         cipher.init(Cipher.DECRYPT_MODE, PemUtil.loadPrivateKey(privateKeyForDecrypt));
-        String secretText = new String((cipher.doFinal(Base64.getDecoder().decode(encryptedText))));
+        String secretText = new String((cipher.doFinal(Base64.decodeBase64(encryptedText))));
         assert(text.equals(secretText));
     }
 

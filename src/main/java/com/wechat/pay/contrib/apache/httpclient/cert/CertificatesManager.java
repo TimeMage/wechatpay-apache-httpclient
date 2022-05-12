@@ -6,6 +6,7 @@ import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
 import com.wechat.pay.contrib.apache.httpclient.Credentials;
 import com.wechat.pay.contrib.apache.httpclient.WechatPayHttpClientBuilder;
+import com.wechat.pay.contrib.apache.httpclient.auth.ValidatorTrue;
 import com.wechat.pay.contrib.apache.httpclient.auth.Verifier;
 import com.wechat.pay.contrib.apache.httpclient.auth.WechatPay2Validator;
 import com.wechat.pay.contrib.apache.httpclient.exception.HttpCodeException;
@@ -21,19 +22,20 @@ import java.security.SignatureException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Base64;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Instant;
 
 /**
  * 平台证书管理器，定时更新证书（默认值为UPDATE_INTERVAL_MINUTE）
@@ -88,7 +90,7 @@ public class CertificatesManager {
                 Signature sign = Signature.getInstance("SHA256withRSA");
                 sign.initVerify(certificate);
                 sign.update(message);
-                return sign.verify(Base64.getDecoder().decode(signature));
+                return sign.verify(Base64.decodeBase64(signature));
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException("当前Java环境不支持SHA256withRSA", e);
             } catch (SignatureException e) {
@@ -147,7 +149,7 @@ public class CertificatesManager {
         }
         // 添加或更新商户信息
         if (certificates.get(merchantId) == null) {
-            certificates.put(merchantId, new ConcurrentHashMap<>());
+            certificates.put(merchantId, new ConcurrentHashMap<BigInteger, X509Certificate>());
         }
         initCertificates(merchantId, credentials, apiV3Key);
         credentialsMap.put(merchantId, credentials);
@@ -227,15 +229,17 @@ public class CertificatesManager {
 
     private void beginScheduleUpdate() {
         executor = new SafeSingleScheduleExecutor();
-        Runnable runnable = () -> {
-            try {
-                Thread.currentThread().setName(SCHEDULE_UPDATE_CERT_THREAD_NAME);
-                log.info("Begin update Certificates.Date:{}", Instant.now());
-                updateCertificates();
-                log.info("Finish update Certificates.Date:{}", Instant.now());
-            } catch (Throwable t) {
-                log.error("Update Certificates failed", t);
-            }
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    Thread.currentThread().setName(SCHEDULE_UPDATE_CERT_THREAD_NAME);
+                    log.info("Begin update Certificates.Date:{}", Instant.now());
+                    updateCertificates();
+                    log.info("Finish update Certificates.Date:{}", Instant.now());
+                } catch (Throwable t) {
+                    log.error("Update Certificates failed", t);
+                }
+            };
         };
         executor.scheduleAtFixedRate(runnable, 0, UPDATE_INTERVAL_MINUTE, TimeUnit.MINUTES);
     }
@@ -255,7 +259,7 @@ public class CertificatesManager {
             byte[] apiV3Key) throws HttpCodeException, IOException, GeneralSecurityException {
         try (CloseableHttpClient httpClient = WechatPayHttpClientBuilder.create()
                 .withCredentials(credentials)
-                .withValidator(verifier == null ? (response) -> true
+                .withValidator(verifier == null ? new ValidatorTrue()
                         : new WechatPay2Validator(verifier))
                 .build()) {
             HttpGet httpGet = new HttpGet(CERT_DOWNLOAD_PATH);

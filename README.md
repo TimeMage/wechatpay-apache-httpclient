@@ -1,4 +1,46 @@
-# wechatpay-apache-httpclient
+# wechatpay-apache-httpclient 
+
+## 兼容jdk1.7的微信支付API V3 SDK
+
+基于官方原版，通过引入第三方库及修改部分语法，兼容jdk1.7。
+引入的第三方库：
+
+commons-codec：提供BASE64编解码
+
+threeten：提供日期处理
+
+注意：
+
+实际使用时，JDK1.7需要安装[无限强度策略补丁](https://www.oracle.com/java/technologies/javase-jce7-downloads.html)。
+
+实际项目中还需引入解密库支持。
+1.添加maven依赖：
+```xml
+<dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcpkix-jdk15on</artifactId>
+    <version>1.68</version>
+</dependency>
+```
+
+2.初始化解密库
+```java
+import java.security.Security;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+……
+
+// JVM中不存在相关解密库时，进行加载
+
+// 该解密库用于签名验证，报文解密等
+
+if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+
+	Security.addProvider(new BouncyCastleProvider());
+
+}
+```
 
 ## 概览
 
@@ -16,7 +58,7 @@
 
 ## 环境要求
 
-+ Java 1.8+
++ Java 1.7+
 
 ## 安装
 
